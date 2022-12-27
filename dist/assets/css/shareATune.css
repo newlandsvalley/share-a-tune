@@ -81,7 +81,7 @@ input[type='radio']:checked:after {
 }
 
 .voice-radio, .playback-radio {
-  margin-left : 160px;
+  margin-left : 100px;
 }
 
 .radio-label {
