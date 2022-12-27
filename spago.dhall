@@ -27,6 +27,7 @@ to generate this file without the comments in this block.
   , "foreign-object"
   , "halogen"
   , "halogen-components"
+  , "js-fileio"
   , "js-uri"
   , "lists"
   , "maybe"

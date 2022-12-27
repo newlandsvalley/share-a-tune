@@ -7,6 +7,7 @@ import Audio.Euterpea.Playable (PlayablePSoM(..))
 import Audio.SoundFont (Instrument, loadRemoteSoundFonts)
 import DOM.HTML.Indexed.InputAcceptType (mediaType)
 import Data.Abc (AbcTune)
+import Data.Abc.Canonical (fromTune)
 import Data.Abc.Utils (getTitle)
 import Data.Abc.PSoM.Polyphony (generateDSL, generateDSL')
 import Data.Abc.Parser (parse) as ABC
@@ -38,6 +39,7 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.MultipleSelectComponent as MSC
 import Halogen.PlayerComponent as PC
+import JS.FileIO (Filespec, saveTextFile)
 import Partial.Unsafe (unsafePartial)
 import StringParser (ParseError)
 import Type.Proxy (Proxy(..))
@@ -45,8 +47,9 @@ import VexFlow.Score (Renderer, clearCanvas, renderFinalTune, resizeCanvas, init
 import VexFlow.Types (Config)
 import VexFlow.Abc.TickableContext (defaultNoteSeparation)
 import Share.Window (print)
-import Share.QueryString (compressToEncodedURIComponent, decompressFromEncodedURIComponent, getQueryStringMaybe, setQueryString)
+import Share.QueryString (decompressFromEncodedURIComponent, getQueryStringMaybe)
 import Share.ShareButton as SHB
+
 
 type State =
   { instruments :: Array Instrument
@@ -62,6 +65,7 @@ data Action =
     Init
   | HandleABCFile FIC.Message
   | HandleClear 
+  | HandleSave
   | HandlePrint
   | HandleTuneIsPlaying PC.Message
   | NewInstrumentsSelection MSC.Message
@@ -70,6 +74,7 @@ data Action =
 -- | a simple button has no parameters and is greyed if there's no valid tune
 data SimpleButtonType =
     Clear
+  | Save
   | Print  
 
 
@@ -148,7 +153,7 @@ type ChildSlots =
 _abcfile = Proxy :: Proxy "abcfile"
 _instrument = Proxy :: Proxy "instrument"
 _player = Proxy :: Proxy "player"
-_shareButton = Proxy :: _ "shareButton"
+_shareButton = Proxy :: Proxy "shareButton"
 
 component :: forall i o. H.Component Query i o Aff
 component =
@@ -212,6 +217,14 @@ component =
     HandleClear -> do
       _ <- H.modify (\st -> st { fileName = Nothing } )
       _ <- handleQuery (ClearOldTune unit)
+      pure unit
+    HandleSave -> do
+      state <- H.get
+      let
+        text = either (const "") fromTune state.tuneResult
+        fileName = getFileName state
+        fsp = { name: fileName, contents: text } :: Filespec
+      _ <- H.liftEffect $ saveTextFile fsp
       pure unit
     HandlePrint -> do
       _ <-  H.liftEffect print
@@ -312,7 +325,7 @@ component =
       -- right pane - ABC
       [ HP.class_ (H.ClassName "rightPane") ]
       [
-        -- load and clear
+        -- load, save and clear
         HH.div
          [ HP.class_ (H.ClassName "panelComponent") ]
          [ HH.h2 
@@ -322,6 +335,7 @@ component =
             [ HP.class_ (H.ClassName "labelAlignment") ]
             [ HH.text "ABC:" ]
          , HH.slot _abcfile unit (FIC.component abcFileInputCtx) unit HandleABCFile
+         , renderSimpleButton Save state
          , renderSimpleButton Clear state
          ]
          -- print
@@ -339,7 +353,7 @@ component =
             [ HP.class_ (H.ClassName "labelAlignment") ]
             [ HH.text "share:" ]
           -- render the share URL button
-          , HH.slot_ (Proxy :: _ "shareButton") unit SHB.shareButton (hush state.tuneResult)
+          , HH.slot_ _shareButton unit SHB.shareButton (hush state.tuneResult)
          ]
         -- render voice menu if we have more than 1 voice
       , renderPossibleVoiceMenu state
@@ -503,9 +517,11 @@ component =
     let
       label = case buttonType of
         Clear -> "clear"
+        Save -> "save"
         Print -> "print"
       action = case buttonType of
         Clear -> HandleClear
+        Save -> HandleSave
         Print -> HandlePrint
       enabled =
         either (\_ -> false) (\_ -> true) state.tuneResult
