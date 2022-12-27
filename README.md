@@ -4,9 +4,12 @@ The idea is simply that you can load an ABC tune file from your file system, and
 
 You can also, if you wish, modify the MIDI instruments on which the tune is played.
 
+## Warning
 
-To build
---------
+In order for the _share tune URL_ button to work, the application must be hosted on a secure browser - i.e. one using _HTTPS_.
+
+
+## To Build
 
     npm run build
 

@@ -2,12 +2,9 @@ module Share.ShareButton where
 
 import Prelude
 import Data.Abc (AbcTune)
-import Data.Abc.Canonical (fromTune)
 import Data.Either (Either(..))
-import Data.Enum (fromEnum)
 import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..), isJust, maybe)
-import Data.String (takeWhile)
 import Effect (Effect)
 import Effect.Aff (Aff, Milliseconds(..), delay, makeAff)
 import Effect.Uncurried (EffectFn3, runEffectFn3)
@@ -15,7 +12,6 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP 
-import Share.QueryString (compressToEncodedURIComponent)
 import Web.HTML (window)
 import Web.HTML.Location (href)
 import Web.HTML.Window (location)
@@ -62,11 +58,9 @@ shareButton =  H.mkComponent
   handleAction _ = do
     H.gets _.forkId >>= traverse_ H.kill
     mTune <- H.gets _.mTune
-    let 
-       abc = maybe "" fromTune mTune
     url <- H.liftEffect $ window >>= location >>= href
     copySucceeded <- H.liftAff $ makeAff \f -> do
-      runEffectFn3 copyToClipboard (urlToPath url <> buildQueryString abc) (f (Right true)) (f (Right false))
+      runEffectFn3 copyToClipboard url (f (Right true)) (f (Right false))
       mempty
     forkId <- H.fork do
       H.liftAff $ delay (1_500.0 # Milliseconds) 
@@ -96,13 +90,3 @@ shareButton =  H.mkComponent
       ]
       [ HH.text message ]
       
-
--- return the entire url up to but not including the query parameters
-urlToPath :: String -> String
-urlToPath url = 
-  takeWhile (\c -> fromEnum c /= 0xBF) url 
-
-buildQueryString :: String -> String 
-buildQueryString abc = 
-  "?abc=" <> compressToEncodedURIComponent abc
-

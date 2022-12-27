@@ -22,7 +22,6 @@ to generate this file without the comments in this block.
   , "effect"
   , "either"
   , "ensemble-scores"
-  , "enums"
   , "foldable-traversable"
   , "foreign-object"
   , "halogen"

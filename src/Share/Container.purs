@@ -47,7 +47,7 @@ import VexFlow.Score (Renderer, clearCanvas, renderFinalTune, resizeCanvas, init
 import VexFlow.Types (Config)
 import VexFlow.Abc.TickableContext (defaultNoteSeparation)
 import Share.Window (print)
-import Share.QueryString (decompressFromEncodedURIComponent, getQueryStringMaybe)
+import Share.QueryString (compressToEncodedURIComponent, decompressFromEncodedURIComponent, getQueryStringMaybe, setQueryString)
 import Share.ShareButton as SHB
 
 
@@ -280,6 +280,7 @@ component =
                                    , currentVoice = currentVoice
                                    , ePsom = ePsom
                                    } )
+          _ <- H.liftEffect $ setQueryString "abc" $ compressToEncodedURIComponent (fromTune tune)
           pure (Just next)
         Left _ -> 
           pure (Just next)
