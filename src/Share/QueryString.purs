@@ -1,5 +1,6 @@
 module Share.QueryString
-  ( getQueryParams
+  ( clearQueryParams
+  , getQueryParams
   , getQueryStringMaybe
   , setQueryString
   , setQueryStrings
@@ -27,6 +28,9 @@ unsafeDecodeURIComponent s = case decodeURIComponent s of
   Nothing -> unsafeCrashWith $ "unsafeDecodeURIComponent encountered errors when decoding '" <> s <> "'"
 
 foreign import getQueryString :: Effect String
+
+-- | clear out any query parameters from the URL
+foreign import clearQueryParams :: Effect Unit
 
 -- | Get all of the URL's query parameters.
 getQueryParams :: Effect (Object.Object String)
@@ -61,6 +65,7 @@ setQueryStrings :: Object.Object String -> Effect Unit
 setQueryStrings ss = do
   params <- getQueryParams
   runEffectFn1 setQueryParameters (Object.union ss params)
+
 
 -- | Compress a string to a URI-encoded string using LZ-based compression algorithm
 foreign import compressToEncodedURIComponent :: String -> String

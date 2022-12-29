@@ -47,7 +47,7 @@ import VexFlow.Score (Renderer, clearCanvas, renderFinalTune, resizeCanvas, init
 import VexFlow.Types (Config)
 import VexFlow.Abc.TickableContext (defaultNoteSeparation)
 import Share.Window (print)
-import Share.QueryString (compressToEncodedURIComponent, decompressFromEncodedURIComponent, getQueryStringMaybe, setQueryString)
+import Share.QueryString (clearQueryParams, compressToEncodedURIComponent, decompressFromEncodedURIComponent, getQueryStringMaybe, setQueryString)
 import Share.ShareButton as SHB
 
 
@@ -217,6 +217,7 @@ component =
     HandleClear -> do
       _ <- H.modify (\st -> st { fileName = Nothing } )
       _ <- handleQuery (ClearOldTune unit)
+      _ <- H.liftEffect clearQueryParams
       pure unit
     HandleSave -> do
       state <- H.get

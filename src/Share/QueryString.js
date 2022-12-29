@@ -14,3 +14,7 @@ export function setQueryParameters(params) {
 
   window.history.replaceState(null, '', '?' + encodedParams);
 }
+
+export function clearQueryParams() {
+  window.history.replaceState(null, '', '?' );
+}
