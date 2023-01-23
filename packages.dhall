@@ -165,7 +165,7 @@ in  upstream
       , "unfoldable"
       ]
     , repo = "https://github.com/newlandsvalley/purescript-abc-scores.git"
-    , version = "v0.6.0"
+    , version = "v0.6.3"
     }
   with ensemble-scores =
     { dependencies = 
@@ -186,6 +186,6 @@ in  upstream
       , "transformers"
       ]
     , repo = "https://github.com/newlandsvalley/ensemble-scores.git"
-    , version = "v0.1.0"
+    , version = "v0.1.3"
     }
 

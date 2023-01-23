@@ -44,7 +44,7 @@ import Partial.Unsafe (unsafePartial)
 import StringParser (ParseError)
 import Type.Proxy (Proxy(..))
 import VexFlow.Score (Renderer, clearCanvas, renderFinalTune, resizeCanvas, initialiseCanvas) as Score
-import VexFlow.Types (Config)
+import VexFlow.Types (Config, Titling(..))
 import VexFlow.Abc.TickableContext (defaultNoteSeparation)
 import Share.Window (print)
 import Share.QueryString (clearQueryParams, compressToEncodedURIComponent, decompressFromEncodedURIComponent, getQueryStringMaybe, setQueryString)
@@ -98,7 +98,7 @@ vexConfig index =
   , height : 10
   , scale : 0.8
   , isSVG : true
-  , titled : true
+  , titling : TitlePlusOrigin
   , noteSeparation: defaultNoteSeparation
   , showChordSymbols : false
   }
@@ -361,8 +361,7 @@ component =
       , renderPossibleVoiceMenu state
       ]   
       
-      -- score rendering
-    , possiblyRenderTuneTitle state
+    -- score rendering
     , HH.ul [ HP.id "score"] renderScores   
     , renderParseError state
     --, renderDebug state
@@ -481,21 +480,6 @@ component =
         []
       ]
 
-  -- render the overall tune title in those cases where we have more than 
-  -- one voice which will be titled separately in each score
-  possiblyRenderTuneTitle :: State -> H.ComponentHTML Action ChildSlots Aff
-  possiblyRenderTuneTitle state =
-    if (size state.voicesMap <= 1) then 
-      HH.text ""
-    else
-      case (hush state.tuneResult >>= getTitle) of
-        Just title ->
-          HH.h2
-            [HP.id "tune-title" ]
-            [HH.text title ]
-        _ ->
-          HH.text ""
-  
   renderParseError :: 
        State
     -> H.ComponentHTML Action ChildSlots Aff
@@ -617,7 +601,7 @@ displayRenderedScores state voicesMap tune = do
   else do 
     -- first try to render the ensemble score
     let 
-      ensembleConfig = (vexConfig 0) { scale = 0.6}
+      ensembleConfig = (vexConfig 0) { scale = 0.75}
     _ <- H.liftAff $ clearScores state
     mError <- H.liftEffect $ renderPolyphonicTune ensembleConfig singleRenderer tune
     -- but fall back to displaying the voices individually
