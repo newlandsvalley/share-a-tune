@@ -40,18 +40,6 @@ body {
   text-align: center;
 }
 
-.abcEdit {
-  /* this is the editor text area */
-  padding: 10px 0 10px 0;
-  margin: 0 2px 0 2px;
-  font-size: 1.5em;
-  font-family: "Times New Roman", monospace;
-  background-color: Beige;
-  text-align: left;
-  display: block;
-}
-
-
 input[type='radio']:after {
   width: 15px;
   height: 15px;
@@ -125,10 +113,12 @@ input[type='radio']:checked:after {
   list-style-type: none;
 }
 
-#tune-title {  
-  margin: 10px 0 0 48px;
-  width: 1500px;
-  font-size: 2.0em;
-  text-align: left;
-  float: left;
+.canvasDiv {
+  display: block;
+  margin-top: 100px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
 }
+
+
