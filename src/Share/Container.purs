@@ -228,7 +228,8 @@ component =
       _ <- H.liftEffect $ saveTextFile fsp
       pure unit
     HandlePrint -> do
-      _ <-  H.liftEffect print
+      state <- H.get
+      _ <-  H.liftEffect $ print (getTuneTitle state)
       pure unit
     NewInstrumentsSelection (MSC.CommittedSelections pendingInstrumentNames) -> do
       let
@@ -536,14 +537,16 @@ getFileName state =
     Just name ->
       name
     _ ->
-      case state.tuneResult of
-        Right abcTune ->
-          let 
-            title = fromMaybe "untitle" $ getTitle abcTune 
-          in
-            title <> ".abc"
-        _ ->
-          "untitled.abc"
+      (getTuneTitle state) <> ".abc"
+
+-- get the tune title (if it exists)
+getTuneTitle :: State -> String
+getTuneTitle state =
+  case state.tuneResult of
+    Right abcTune ->
+      fromMaybe "untitled" $ getTitle abcTune 
+    _ ->
+      "untitled"
 
 parseTune :: String -> Either ParseError AbcTune
 parseTune text = 

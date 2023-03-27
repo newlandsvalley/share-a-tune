@@ -1,17 +1,16 @@
 {
   "private": true,
   "scripts": {
-    "build": "spago bundle-app --to dist/app.js",
-    "test": "spago -x ./test.dhall test"
+    "build": "spago bundle-app --to dist/app.js"
   },
   "devDependencies": {
     "esbuild": "^0.14.54",
-    "purescript": "^0.15.4",
+    "purescript": "^0.15.8",
     "purescript-psa": "^0.5.1",
     "spago": "^0.20.9"
   },
   "dependencies": {
-    "jquery": "^1.12.4",
+    "jquery": "^3.6.4",
     "lz-string": "^1.4.4"
   }
 }
