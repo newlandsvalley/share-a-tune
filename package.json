@@ -5,9 +5,9 @@
   },
   "devDependencies": {
     "esbuild": "^0.14.54",
-    "purescript": "^0.15.8",
+    "purescript": "^0.15.10",
     "purescript-psa": "^0.5.1",
-    "spago": "^0.20.9"
+    "spago": "^0.21.0"
   },
   "dependencies": {
     "jquery": "^3.6.4",

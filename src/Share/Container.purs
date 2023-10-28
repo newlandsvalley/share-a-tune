@@ -49,6 +49,8 @@ import VexFlow.Abc.TickableContext (defaultNoteSeparation)
 import Share.Window (print)
 import Share.QueryString (clearQueryParams, compressToEncodedURIComponent, decompressFromEncodedURIComponent, getQueryStringMaybe, setQueryString)
 import Share.ShareButton as SHB
+import Web.HTML (window) as HTML
+import Web.HTML.Window (innerWidth) as Window
 
 
 type State =
@@ -58,7 +60,11 @@ type State =
   , currentVoice :: Maybe String
   , ePsom  :: Either ParseError PSoM
   , fileName :: Maybe String
+  , deviceViewportWidth :: Int
   , vexRenderers :: Array Score.Renderer
+  -- we may have to display the score of each part separately
+  -- and the scale differs depending on the user's device and whether we're using a multipart score
+  , vexConfigForPart :: Int -> Number -> Config   
   }
 
 data Action =
@@ -82,6 +88,10 @@ data Query a =
     HandleNewTuneText a
   | ClearOldTune a
 
+-- | the cutoff width between small devices such as mobiles and large ones such as laptops
+smallDeviceViewportWidthCutoff :: Int
+smallDeviceViewportWidthCutoff = 720
+
 maxVoices :: Int 
 maxVoices = 5
 
@@ -91,17 +101,10 @@ allVoices = "all voices"
 voiceNamePrefix :: String 
 voiceNamePrefix = "voice: "
   
-vexConfig :: Int -> Config
-vexConfig index =
-  { parentElementId : ("vexflow" <> show index)
-  , width : 1300
-  , height : 10
-  , scale : 0.8
-  , isSVG : true
-  , titling : TitlePlusOrigin
-  , noteSeparation: defaultNoteSeparation
-  , showChordSymbols : false
-  }
+-- | the default scale is used for large screens (laptops and desktops) and for any score
+-- | with a single part. This reduces for small devices or if we're displaying a multi-part score
+defaultScale :: Number
+defaultScale = 0.8
 
 abcFileInputCtx :: FIC.Context
 abcFileInputCtx =
@@ -177,22 +180,46 @@ component =
     , currentVoice : Nothing
     , ePsom: nullPsomTune
     , fileName: Nothing
+    , deviceViewportWidth : 0
     , vexRenderers: []
+    , vexConfigForPart : vexConfig 
     }
+
+    where 
+
+    vexConfig :: Int -> Number -> Config
+    vexConfig index scale =
+      { parentElementId : ("vexflow" <> show index)
+      , width : 1300
+      , height : 10
+      , scale: scale
+      , isSVG : true
+      , titling : TitlePlusOrigin
+      , noteSeparation: defaultNoteSeparation
+      , showChordSymbols : false
+      }
 
   handleAction ∷ Action → H.HalogenM State Action ChildSlots o Aff Unit
   handleAction = case _ of
     Init -> do
+      state <- H.get
       instruments <- H.liftAff $  loadRemoteSoundFonts  [AcousticGrandPiano, Vibraphone, AcousticBass]
       -- get the tune from the query paramter if it exists
       tuneResult <- H.liftAff withSession
+
+      -- set the scale of the score display according to the viewport width      
+      window <- H.liftEffect HTML.window
+      deviceViewportWidth <- H.liftEffect $ Window.innerWidth window
+
       let
         rows :: Array Int
         rows = range 0 (maxVoices - 1)
-      renderers <- H.liftEffect $ traverse (\r -> Score.initialiseCanvas $ vexConfig r) rows
+
+      renderers <- H.liftEffect $ traverse (\r -> Score.initialiseCanvas $ state.vexConfigForPart r defaultScale) rows
       H.modify_ (\st -> st { vexRenderers = renderers } )
       _ <- H.modify (\st -> st { instruments = instruments
                                , tuneResult = tuneResult
+                               , deviceViewportWidth = deviceViewportWidth
                                , vexRenderers = renderers } )
       case tuneResult of 
         Right _tune -> do
@@ -312,7 +339,7 @@ component =
           -- load instruments
           HH.div
             [ HP.class_ (H.ClassName "panelComponent")]
-            [ HH.h2 
+            [ HH.h3 
                 []
                 [HH.text "Instruments"]  
             , HH.slot _instrument unit
@@ -331,7 +358,7 @@ component =
         -- load, save and clear
         HH.div
          [ HP.class_ (H.ClassName "panelComponent") ]
-         [ HH.h2 
+         [ HH.h3 
                 []
                 [HH.text "Tune"]  
          , HH.label
@@ -592,19 +619,24 @@ displayRenderedScores :: ∀ o.
     -> H.HalogenM State Action ChildSlots o Aff Unit
 displayRenderedScores state voicesMap tune = do
   let 
-     -- single renderer is used unless we have multiple voices that 
-     -- cannot be rendered in an ensemble score (maybe because parts don't match)
-     singleRenderer = unsafePartial $ fromJust $ index state.vexRenderers 0
+    -- single renderer is used unless we have multiple voices that 
+    -- cannot be rendered in an ensemble score (maybe because parts don't match)
+    singleRenderer = unsafePartial $ fromJust $ index state.vexRenderers 0
+    singlePartScale = 
+      if (state.deviceViewportWidth <= smallDeviceViewportWidthCutoff) then 0.5 else defaultScale    
+     
     -- render the whole tune if only one voice
   if (size voicesMap) <= 1 then do
     _ <- H.liftAff $ clearScores state
-    _ <- H.liftEffect $ Score.renderFinalTune (vexConfig 0) singleRenderer tune
+    _ <- H.liftEffect $ Score.renderFinalTune (state.vexConfigForPart 0 singlePartScale) singleRenderer tune
     pure unit
   -- otherwise render the selected voice
   else do 
     -- first try to render the ensemble score
     let 
-      ensembleConfig = (vexConfig 0) { scale = 0.75}
+      scale = 
+        if (state.deviceViewportWidth <= smallDeviceViewportWidthCutoff) then 0.45 else 0.75 
+      ensembleConfig = (state.vexConfigForPart 0 scale)
     _ <- H.liftAff $ clearScores state
     mError <- H.liftEffect $ renderPolyphonicTune ensembleConfig singleRenderer tune
     -- but fall back to displaying the voices individually
@@ -616,7 +648,11 @@ displayRenderedScores state voicesMap tune = do
           case (index state.vexRenderers idx) of 
             Just renderer -> do
               _ <- H.liftEffect $ Score.clearCanvas $ renderer
-              _ <- H.liftEffect $ Score.renderFinalTune (vexConfig idx) renderer (snd voices)
+              _ <- H.liftEffect 
+                     $ Score.renderFinalTune 
+                       (state.vexConfigForPart idx singlePartScale) 
+                       renderer 
+                       (snd voices)
               pure unit
             _ -> pure unit
         voiceNamesAndTunes :: Array (Tuple String AbcTune)
@@ -658,7 +694,7 @@ clearScores :: State -> Aff Unit
 clearScores state = do
   let
     f :: Int -> Score.Renderer -> Effect Score.Renderer
-    f i renderer = Score.resizeCanvas renderer (vexConfig i)
+    f i renderer = Score.resizeCanvas renderer (state.vexConfigForPart i 0.8)
   _ <- H.liftEffect $ traverseWithIndex_ f state.vexRenderers
   _ <- H.liftEffect $ traverse (Score.clearCanvas) state.vexRenderers      
   pure unit
