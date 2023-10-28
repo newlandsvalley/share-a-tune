@@ -91,6 +91,7 @@ input[type='radio']:checked:after {
   font-size: 1.1em;
 }
 
+
 .leftPane {
   float: left;
 }
@@ -106,19 +107,13 @@ input[type='radio']:checked:after {
   font-family: Georgia, serif;
 }
 
-.scoreItem {
-  list-style-type: none;
-  margin-left: 0;
-  padding-left: 0;
-}
-
 .canvasDiv {
   clear: left;
 }
 
 .canvasDiv > svg {
   margin-top: 20px;
-  max-width: 90vw;
+  max-width: 95vw;
 }
 
 
@@ -129,15 +124,32 @@ input[type='radio']:checked:after {
     padding: 0 40px 0 40px;
   }
 
+  /* center the left and right panes which form the controls 
+    (the default on small devices is to have the controls in a single column)
+  */
+  #controls {
+    display:flex; 
+    flex-direction: row; 
+    justify-content: center; 
+    align-items: center";
+  }
+
   .leftPane {
     width: 360px;
   }  
 
+  /* align items in the LHS panel */
   .panelComponent {
-    /* align items in the LHS panel */
     margin: 0 0 10px 32px;
     font-size: 1.2em;
     font-family: Georgia, serif;
+  }
+
+  /* center the score */
+  .canvasDiv > svg {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
   }
 
 }

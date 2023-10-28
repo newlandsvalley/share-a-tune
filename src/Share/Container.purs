@@ -332,8 +332,11 @@ component =
       [HP.class_ (H.ClassName "center") ]
       [HH.text "Share a Tune"]  
 
+      -- widget controls
+    , HH.div 
+      [HP.id "controls"]
       -- left pane - instruments
-    , HH.div
+      [HH.div
         [ HP.class_ (H.ClassName "leftPane") ]
         [ 
           -- load instruments
@@ -349,48 +352,48 @@ component =
           , renderInstruments state
           -- player
           , renderPlayer state
-        ]
-        
-    , HH.div
-      -- right pane - ABC
-      [ HP.class_ (H.ClassName "rightPane") ]
-      [
-        -- load, save and clear
-        HH.div
-         [ HP.class_ (H.ClassName "panelComponent") ]
-         [ HH.h3 
+        ]    
+        -- right pane - ABC    
+        , HH.div
+          [ HP.class_ (H.ClassName "rightPane") ]
+          [
+            -- load, save and clear
+            HH.div
+              [ HP.class_ (H.ClassName "panelComponent") ]
+              [ HH.h3 
                 []
                 [HH.text "Tune"]  
-         , HH.label
-            [ HP.class_ (H.ClassName "labelAlignment") ]
-            [ HH.text "ABC:" ]
-         , HH.slot _abcfile unit (FIC.component abcFileInputCtx) unit HandleABCFile
-         , renderSimpleButton Save state
-         , renderSimpleButton Clear state
-         ]
-         -- print
-      , HH.div
-         [ HP.class_ (H.ClassName "panelComponent") ]
-         [  HH.label
-            [ HP.class_ (H.ClassName "labelAlignment") ]
-            [ HH.text "score:" ]
-         , renderSimpleButton Print state
-         ]
-         -- render the share URL button if we have any ABC
-      , HH.div
-         [ HP.class_ (H.ClassName "panelComponent") ]
-         [  HH.label
-            [ HP.class_ (H.ClassName "labelAlignment") ]
-            [ HH.text "share:" ]
-          -- render the share URL button
-          , HH.slot_ _shareButton unit SHB.shareButton (hush state.tuneResult)
-         ]
-        -- render voice menu if we have more than 1 voice
-      , renderPossibleVoiceMenu state
-      ]   
+              , HH.label
+                [ HP.class_ (H.ClassName "labelAlignment") ]
+                [ HH.text "ABC:" ]
+              , HH.slot _abcfile unit (FIC.component abcFileInputCtx) unit HandleABCFile
+              , renderSimpleButton Save state
+              , renderSimpleButton Clear state
+              ]
+            -- print
+            , HH.div
+              [ HP.class_ (H.ClassName "panelComponent") ]
+              [ HH.label
+                 [ HP.class_ (H.ClassName "labelAlignment") ]
+                 [ HH.text "score:" ]
+              , renderSimpleButton Print state
+              ]
+            -- render the share URL button if we have any ABC
+            , HH.div
+              [ HP.class_ (H.ClassName "panelComponent") ]
+              [ HH.label
+                [ HP.class_ (H.ClassName "labelAlignment") ]
+                [ HH.text "share:" ]             
+                -- render the share URL button
+                , HH.slot_ _shareButton unit SHB.shareButton (hush state.tuneResult)
+              ]
+            -- render voice menu if we have more than 1 voice
+            , renderPossibleVoiceMenu state
+          ]   
+      ]
       
     -- score rendering
-    , HH.ul [ HP.id "score"] renderScores   
+    , HH.div [ HP.id "score"] renderScores   
     , renderParseError state
     --, renderDebug state
     ]
@@ -499,7 +502,7 @@ component =
 
   --renderScoreItem :: ∀ i p. State -> Int -> HH.HTML i p
   renderScoreItem idx =
-    HH.li
+    HH.div
       [ HP.class_ (H.ClassName "scoreItem") ]
       [ HH.div
         [ HP.id ("vexflow" <> show idx)
