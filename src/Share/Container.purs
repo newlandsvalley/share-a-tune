@@ -203,13 +203,15 @@ component =
   handleAction = case _ of
     Init -> do
       state <- H.get
-      instruments <- H.liftAff $  loadRemoteSoundFonts  [AcousticGrandPiano, Vibraphone, AcousticBass]
-      -- get the tune from the query paramter if it exists
-      tuneResult <- H.liftAff withSession
-
-      -- set the scale of the score display according to the viewport width      
+      -- get the viewport width of the device accessing us
       window <- H.liftEffect HTML.window
       deviceViewportWidth <- H.liftEffect $ Window.innerWidth window
+
+      -- load the initial instruments.  This is more varied on large devices but just the piano on smaller ones
+      instruments <- H.liftAff $  initialInstruments deviceViewportWidth
+
+      -- get the tune from the query paramter if it exists
+      tuneResult <- H.liftAff withSession
 
       let
         rows :: Array Int
@@ -338,20 +340,12 @@ component =
       -- left pane - instruments
       [HH.div
         [ HP.class_ (H.ClassName "leftPane") ]
-        [ 
-          -- load instruments
-          HH.div
-            [ HP.class_ (H.ClassName "panelComponent")]
-            [ HH.h3 
-                []
-                [HH.text "Instruments"]  
-            , HH.slot _instrument unit
-               (MSC.component multipleSelectCtx initialMultipleSelectState) unit NewInstrumentsSelection
-            ]
-          -- display instruments
-          , renderInstruments state
+        [ -- offer user option to reload instruments if on large devices
+          reloadInstruments state
+          -- display instruments if on large devices
+        , renderInstruments state
           -- player
-          , renderPlayer state
+        , renderPlayer state
         ]    
         -- right pane - ABC    
         , HH.div
@@ -398,6 +392,56 @@ component =
     --, renderDebug state
     ]
 
+  {- On laptops and desktops, we offer the user the option to reload the instruments
+     but on smaller devices, where the cost overhead of the load is so great, we don't.
+     These users only have access to the piano for each voice
+  -}
+  reloadInstruments :: State -> H.ComponentHTML Action ChildSlots Aff
+  reloadInstruments state =
+    if (state.deviceViewportWidth <= smallDeviceViewportWidthCutoff) then 
+      HH.div_
+        [ ]
+    else
+      HH.div
+        [ HP.class_ (H.ClassName "panelComponent")]
+        [ HH.h3 
+            []
+            [HH.text "Instruments"]  
+        , HH.slot _instrument unit
+            (MSC.component multipleSelectCtx initialMultipleSelectState) unit NewInstrumentsSelection
+        ]
+
+  {- On small devices, we don't display the loaded instruments - 
+     they're stuck with the piano
+  -}
+  renderInstruments :: State -> H.ComponentHTML Action ChildSlots Aff
+  renderInstruments state =
+    if (null state.instruments) then
+      HH.div
+        [ HP.class_ (H.ClassName "panelComponent") ]
+        [ HH.text ("wait for instruments to load")] 
+    else
+      if (state.deviceViewportWidth <= smallDeviceViewportWidthCutoff) then 
+        HH.div_
+          [ ]
+      else
+        HH.div
+          [ HP.class_ (H.ClassName "panelComponent") ]
+          [ HH.div
+             [ HP.class_ (H.ClassName "longLabel") ]
+             [ HH.text "loaded instruments:" ]
+          , HH.ul
+            [ HP.class_ $ ClassName "msListItem" ]
+            $ map renderInstrument state.instruments
+          ]
+
+  renderInstrument :: Instrument -> H.ComponentHTML Action ChildSlots Aff
+  renderInstrument instrument =
+    HH.li
+      [ HP.class_ $ ClassName "msListItemLabel" ]
+      [ HH.text $ (gleitzmanName <<< fst) instrument ]
+
+
   renderPlayer :: State -> H.ComponentHTML Action ChildSlots Aff
   renderPlayer state =
     case state.ePsom of
@@ -410,29 +454,6 @@ component =
       Left _ ->
         HH.div_
           [  ]
-
-  renderInstruments :: State -> H.ComponentHTML Action ChildSlots Aff
-  renderInstruments state =
-    if (null state.instruments) then
-      HH.div
-        [ HP.class_ (H.ClassName "panelComponent") ]
-        [ HH.text "wait for instruments to load"]
-    else
-      HH.div
-        [ HP.class_ (H.ClassName "panelComponent") ]
-        [ HH.div
-           [ HP.class_ (H.ClassName "longLabel") ]
-           [ HH.text "loaded instruments:" ]
-        , HH.ul
-          [ HP.class_ $ ClassName "msListItem" ]
-          $ map renderInstrument state.instruments
-        ]
-
-  renderInstrument :: Instrument -> H.ComponentHTML Action ChildSlots Aff
-  renderInstrument instrument =
-    HH.li
-      [ HP.class_ $ ClassName "msListItemLabel" ]
-      [ HH.text $ (gleitzmanName <<< fst) instrument ]
 
   -- we only render this menu if we have more than 1 voice
   renderPossibleVoiceMenu :: State -> H.ComponentHTML Action ChildSlots Aff 
@@ -452,11 +473,6 @@ component =
     HH.div
       [ HP.class_ (H.ClassName "panelComponent")]
       [ 
-        
-        {- HH.label
-         [ HP.class_ (H.ClassName "labelAlignment") ]
-         [ HH.text "preferences:" ]
-      , -}
         HH.div 
          [ HP.class_ (H.ClassName "voiceMenu")] 
          $ mapWithIndex (addVoiceRadio currentVoice) voices
@@ -491,11 +507,6 @@ component =
       voiceId = "voice" <> show id
 
 
-  {-}
-  renderScores :: ∀ m
-    . MonadAff m
-    => Array (H.ComponentHTML Action ChildSlots m)
-  -}
   renderScores :: Array (H.ComponentHTML Action ChildSlots Aff)
   renderScores =
     map renderScoreItem (range 0 (maxVoices -1))
@@ -560,6 +571,17 @@ component =
   -}
 
 -- helpers
+
+-- get the initial set of indtruments
+-- on larger devices, this is acoustic grand piano, vibraphone and acoustic bass
+-- whereas on smaller devices it's just the piano shared by each part
+initialInstruments :: Int -> Aff (Array Instrument)
+initialInstruments deviceViewportWidth =  
+  if (deviceViewportWidth <= smallDeviceViewportWidthCutoff) then
+    loadRemoteSoundFonts  [AcousticGrandPiano]
+  else
+    loadRemoteSoundFonts  [AcousticGrandPiano, Vibraphone, AcousticBass]
+
 -- | get the file name
 getFileName :: State -> String
 getFileName state =
