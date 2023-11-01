@@ -23,6 +23,7 @@ import Data.Map (Map, empty, keys, lookup, size, toUnfoldable, values)
 import Data.Maybe (Maybe(..), fromJust, fromMaybe, isJust, maybe)
 import Data.MediaType (MediaType(..))
 import Data.Midi.Instrument (InstrumentName(..), gleitzmanName, gleitzmanNames, readGleitzman)
+import Data.Ord (abs)
 import Data.Set (toUnfoldable) as Set
 import Data.String (stripPrefix)
 import Data.String.Pattern (Pattern(..))
@@ -40,6 +41,7 @@ import Halogen.HTML.Properties as HP
 import Halogen.MultipleSelectComponent as MSC
 import Halogen.PlayerComponent as PC
 import JS.FileIO (Filespec, saveTextFile)
+import Halogen.Query.Event (eventListener)
 import Partial.Unsafe (unsafePartial)
 import StringParser (ParseError)
 import Type.Proxy (Proxy(..))
@@ -50,7 +52,8 @@ import Share.Window (print)
 import Share.QueryString (clearQueryParams, compressToEncodedURIComponent, decompressFromEncodedURIComponent, getQueryStringMaybe, setQueryString)
 import Share.ShareButton as SHB
 import Web.HTML (window) as HTML
-import Web.HTML.Window (innerWidth) as Window
+import Web.HTML.Window (Window, innerWidth, fromEventTarget, toEventTarget) as Window
+import Web.Event.Event (EventType(..), target) as Event
 
 
 type State =
@@ -65,6 +68,7 @@ type State =
   -- we may have to display the score of each part separately
   -- and the scale differs depending on the user's device and whether we're using a multipart score
   , vexConfigForPart :: Int -> Number -> Config   
+  , mWindowSubscriptionId :: Maybe H.SubscriptionId
   }
 
 data Action =
@@ -76,6 +80,8 @@ data Action =
   | HandleTuneIsPlaying PC.Message
   | NewInstrumentsSelection MSC.Message
   | HandleChangeVoice String
+  | HandleWindowResize (Maybe Window.Window)
+  | Finalize
 
 -- | a simple button has no parameters and is greyed if there's no valid tune
 data SimpleButtonType =
@@ -183,6 +189,7 @@ component =
     , deviceViewportWidth : 0
     , vexRenderers: []
     , vexConfigForPart : vexConfig 
+    , mWindowSubscriptionId : Nothing
     }
 
     where 
@@ -205,6 +212,12 @@ component =
       state <- H.get
       -- get the viewport width of the device accessing us
       window <- H.liftEffect HTML.window
+      -- subsribe to window resize messages
+      subscriptionId <- H.subscribe do
+        eventListener
+          (Event.EventType "resize")
+          (Window.toEventTarget window)
+          (Event.target >>> map (Window.fromEventTarget >>> HandleWindowResize))
       deviceViewportWidth <- H.liftEffect $ Window.innerWidth window
 
       -- load the initial instruments.  This is more varied on large devices but just the piano on smaller ones
@@ -222,7 +235,8 @@ component =
       _ <- H.modify (\st -> st { instruments = instruments
                                , tuneResult = tuneResult
                                , deviceViewportWidth = deviceViewportWidth
-                               , vexRenderers = renderers } )
+                               , vexRenderers = renderers
+                               , mWindowSubscriptionId = Just subscriptionId } )
       case tuneResult of 
         Right _tune -> do
           _ <- handleQuery (HandleNewTuneText unit)
@@ -293,6 +307,28 @@ component =
       reloadPlayer (state { currentVoice = currentVoice } )
       _ <- H.modify (\st -> st { currentVoice = currentVoice })
       pure unit
+    HandleWindowResize mWindow -> do
+      case mWindow of 
+        Just window -> do
+          state <- H.get
+          windowWidth <- H.liftEffect $ Window.innerWidth window
+          -- primitive debouncing - only register a change of more than 50 pixels since the last width
+          if (abs (windowWidth - state.deviceViewportWidth ) > 50) then do
+            _ <- H.modify (\st -> st { deviceViewportWidth = windowWidth })
+            pure unit
+          else
+            pure unit 
+        _ -> 
+          pure unit
+      pure unit
+    Finalize -> do       
+      state <- H.get
+      -- unsubscribe from the window resize
+      case state.mWindowSubscriptionId of 
+        Just susbscriptionId ->
+          H.unsubscribe susbscriptionId
+        _ ->
+          pure unit
 
   handleQuery :: ∀ a. Query a -> H.HalogenM State Action ChildSlots o Aff (Maybe a)
   handleQuery = case _ of    

@@ -42,6 +42,7 @@ to generate this file without the comments in this block.
   , "string-parsers"
   , "strings"
   , "tuples"
+  , "web-events"
   , "web-html"
   ]
 , packages = ./packages.dhall
