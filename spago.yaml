@@ -1,0 +1,113 @@
+package:
+  dependencies:
+    - abc-parser
+    - abc-scores
+    - abc2psom
+    - aff
+    - arrays
+    - console
+    - dom-indexed
+    - effect
+    - either
+    - ensemble-scores
+    - foldable-traversable
+    - foreign-object
+    - halogen
+    - halogen-components
+    - js-fileio
+    - js-uri
+    - lists
+    - maybe
+    - media-types
+    - midi
+    - newtype
+    - nullable
+    - ordered-collections
+    - partial
+    - prelude
+    - school-of-music
+    - soundfonts
+    - string-parsers
+    - strings
+    - tuples
+    - web-events
+    - web-html
+  name: share-a-tune
+workspace:
+  extraPackages:
+    abc-scores:
+      dependencies:
+        - abc-parser
+        - arrays
+        - console
+        - effect
+        - either
+        - foldable-traversable
+        - integers
+        - lists
+        - maybe
+        - newtype
+        - ordered-collections
+        - prelude
+        - profunctor-lenses
+        - rationals
+        - strings
+        - stringutils
+        - transformers
+        - tuples
+        - unfoldable
+      git: https://github.com/newlandsvalley/purescript-abc-scores.git
+      ref: v0.6.3
+    abc2psom:
+      dependencies:
+        - abc-parser
+        - arrays
+        - either
+        - foldable-traversable
+        - integers
+        - lists
+        - maybe
+        - midi
+        - newtype
+        - ordered-collections
+        - prelude
+        - rationals
+        - school-of-music
+        - soundfonts
+        - transformers
+        - tuples
+        - unfoldable
+      git: https://github.com/newlandsvalley/purescript-abc2psom.git
+      ref: v0.1.0
+    ensemble-scores:
+      dependencies:
+        - abc-parser
+        - abc-scores
+        - arrays
+        - console
+        - debug
+        - effect
+        - either
+        - foldable-traversable
+        - integers
+        - maybe
+        - newtype
+        - partial
+        - prelude
+        - strings
+        - transformers
+      git: https://github.com/newlandsvalley/ensemble-scores.git
+      ref: v0.1.3
+    halogen-components:
+      dependencies:
+        - console
+        - css
+        - effect
+        - halogen
+        - halogen-css
+        - js-fileio
+        - soundfonts
+      git: https://github.com/newlandsvalley/purescript-halogen-components.git
+      ref: v0.6.0
+  packageSet:
+    url: https://raw.githubusercontent.com/purescript/package-sets/psc-0.15.4-20221214/packages.json
