@@ -4,9 +4,7 @@ The idea is simply that you can load an ABC tune from your file system, see the 
 
 You can also, if you wish, modify the MIDI instruments on which the tune is played.
 
-## Warning
-
-In order for the _share tune URL_ button to work, the application must be hosted on a secure server - i.e. one using _HTTPS_. I currently have it hosted on a plain old HTTP server.  To start, here's [Bas-Pelles Eriks Brudpolska](http://www.tradtunedb.org.uk:8605/?abc=BoLgBAjAsAUAKuAQgQwM4FoAKBTANr7VMAUQCcBLAayMVIFcATABwHtdVLlYBlcAEVLI6TAHZcYAJXCt2nWAFlwAZgD0AFlgBFcBHUBeCBACssADI6VEAGywA0uACC85ACsWpWADVwAJlgAfRx8AYx8wUMRgsAZgxAcwfzAAMzUwAG8kgF9sJIBzJLBsVMSHHzTgzIYwmLjo2PjEyIZsOtqAcQAxYj4EgLAAYSUoiKiahuTUjOy8gqKEsFLYhc7iMC6%2BfoSIMEQAGn6%2BVb4fboHUkH8wvYOjk57Bgd6YQJIHYPjsN-jiL-niNsQbUKAKB-0B8wcuz4HR6DmhsKhMIh%2B2Imwc-VRCxRm38fUh8KxBI6nTCJWxWIxm2IXVJA2uPW61IWJ1p9NupweFy8OgCQVC4R8kVa4xS6SyOXyhWKzPKlWq9WF8zaDiFcU6JA2eyeZKGAqFY3moqmEtm0uwPmQuWS2Biiv822VqpCiAW50uYEdUUQzoWSgavIWwWwUWQQaib2DSsQ2BduWjLoBMfm0IcHWiHVTYBTacSGIcq2CP1WedWuOeWYzaezCzitJLAyLNdK8zSiEyDkd4SahR8zcSnp2PocSjAXOesCAA). If you use a recent Chrome browser, you can use its _copy link_ button instead to share the tune.
+As an example, here's [Bas-Pelles Eriks Brudpolska](https://www.tradtunedb.org.uk:8605/?abc=BoLgBAjAsAUAKuAQgQwM4FoAKBTANr7VMAUQCcBLAayMVIFcATABwHtdVLlYBlcAEVLI6TAHZcYAJXCt2nWAFlwAZgD0AFlgBFcBHUBeCBACssADI6VEAGywA0uACC85ACsWpWADVwAJlgAfRx8AYx8wUMRgsAZgxAcwfzAAMzUwAG8kgF9sJIBzJLBsVMSHHzTgzIYwmLjo2PjEyIZsOtqAcQAxYj4EgLAAYSUoiKiahuTUjOy8gqKEsFLYhc7iMC6%2BfoSIMEQAGn6%2BVb4fboHUkH8wvYOjk57Bgd6YQJIHYPjsN-jiL-niNsQbUKAKB-0B8wcuz4HR6DmhsKhMIh%2B2Imwc-VRCxRm38fUh8KxBI6nTCJWxWIxm2IXVJA2uPW61IWJ1p9NupweFy8OgCQVC4R8kVa4xS6SyOXyhWKzPKlWq9WF8zaDiFcU6JA2eyeZKGAqFY3moqmEtm0uwPmQuWS2Biiv822VqpCiAW50uYEdUUQzoWSgavIWwWwUWQQaib2DSsQ2BduWjLoBMfm0IcHWiHVTYBTacSGIcq2CP1WedWuOeWYzaezCzitJLAyLNdK8zSiEyDkd4SahR8zcSnp2PocSjAXOesCAA). 
 
 
 ## To Build
