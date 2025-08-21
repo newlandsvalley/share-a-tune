@@ -4,13 +4,13 @@
     "build": "spago bundle --outfile dist/app.js --bundle-type app --platform browser"
   },
   "devDependencies": {
-    "esbuild": "^0.24.2",
+    "esbuild": "^0.25.9",
     "purescript": "^0.15.15",
     "purescript-psa": "^0.5.1",
-    "spago": "^0.93.42"
+    "spago": "^0.93.44"
   },
   "dependencies": {
     "jquery": "^3.6.4",
-    "lz-string": "^1.4.4"
+    "lz-string": "^1.5.0"
   }
 }

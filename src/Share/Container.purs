@@ -420,11 +420,11 @@ component =
             -- render voice menu if we have more than 1 voice
             , renderPossibleVoiceMenu state
           ]   
-      ]
-      
+      ]      
     -- score rendering
     , HH.div [ HP.id "score"] renderScores   
     , renderParseError state
+    , renderExplanatoryText state
     --, renderDebug state
     ]
 
@@ -598,6 +598,26 @@ component =
         , HP.enabled enabled
         ]
         [ HH.text label ]
+
+  
+  renderExplanatoryText :: State -> H.ComponentHTML Action ChildSlots Aff 
+  renderExplanatoryText state = 
+    case (hush state.tuneResult) of 
+      Just _tune -> 
+        HH.text ""
+      _ -> 
+        HH.div_
+          [ HH.p
+             [ HP.class_ (H.ClassName "explanatoryText") ]
+             [ HH.text ("Perhaps you have downloaded the ABC for a tune and want "
+                        <> "to hear it or to see the score. Or perhaps you are " 
+                        <> "transcribing a tune into ABC and want to collaborate with a friend.  " 
+                        <> "If so, you can load the ABC here and then press the share button which "
+                        <> "writes a link to the clipboard. If you send this link to your friend, she can "
+                        <> "see and hear the tune in exactly the same way that you can. "
+                        <> "Share-a-tune also works well with tunes in multiple parts.") 
+             ]
+          ]
 
   {-
   renderDebug :: State -> H.ComponentHTML Action ChildSlots Aff 
