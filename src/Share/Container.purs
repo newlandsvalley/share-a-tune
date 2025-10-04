@@ -271,9 +271,7 @@ component =
       _ <- H.liftEffect $ saveTextFile fsp
       pure unit
     HandlePrint -> do
-      state <- H.get
-      _ <-  H.liftEffect $ print (getTuneTitle state)
-      pure unit
+      H.liftEffect print
     NewInstrumentsSelection (MSC.CommittedSelections pendingInstrumentNames) -> do
       let
         f s acc =

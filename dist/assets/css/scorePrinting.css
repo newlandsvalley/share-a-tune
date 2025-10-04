@@ -1,20 +1,30 @@
 @media print {
-  body * {
+
+
+  @page {
+    margin-bottom: 0;     /* remove the otherwise automatic footer */
+    margin-left: 10px;    /* set the LR page margins to what we want */
+    margin-right: 10px;
+    margin-top: 0;     /* remove the automatic header */
+  }
+
+  #controls {
     visibility: hidden;
   }
-  #tune-title {
-    visibility: visible;
-    position: absolute;
-    left: 10;
-    top: 0;
-    font-size: 2.4em;
+
+  .leftPane, .rightPane {
+    visibility: hidden;
   }
+
   #score, #score * {
     visibility: visible;
   }
+  
   #score {
     position: absolute;
     left: 0;
-    top: 10;
+    top: 0;
+    margin-top: 50px;
+    margin-left: 10px;
   }
 }
