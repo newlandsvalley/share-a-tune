@@ -121,6 +121,11 @@ input[type='radio']:checked:after {
   font-size: 1.2em;
 }
 
+/* hide any bullet points marking score item positions */
+.scoreItem {
+  list-style-type: none;
+}
+
 
 /* laptops. desktops etc */
 @media (min-width: 725px) {
